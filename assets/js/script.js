@@ -79,15 +79,22 @@ $(".list-group").on("click", "span", function () {
     .addClass("form-control")
     .val(date);
 
-  //swap out elements
   $(this).replaceWith(dateInput);
+
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function () {
+      //when calender is closed force a change event on dateInput
+      $(this).trigger("change");
+    },
+  });
 
   //automatically focus on new element
   dateInput.trigger("focus");
 });
 
 //value of due date was changed
-$(".list-group").on("blur", "input[type='text']", function () {
+$(".list-group").on("change", "input[type='text']", function () {
   //get current text
   var text = $(this).val().trim();
 
@@ -98,13 +105,13 @@ $(".list-group").on("blur", "input[type='text']", function () {
   var index = $(this).closest(".list-group-item").index();
 
   //update task and save with localstorage
-  tasks[status][index].date = date;
+  tasks[status][index].date = text;
   saveTasks();
 
   //recreate span element
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
-    .text(date);
+    .text(text);
 
   //replace input with span element
   $(this).replaceWith(taskSpan);
@@ -197,6 +204,11 @@ $("#task-form-modal .btn-primary").click(function () {
   }
 });
 
+$("#modalDueDate").datepicker({
+  //sets how many days after the current day users can select
+  minDate: 1,
+});
+
 // remove all tasks
 $("#remove-tasks").on("click", function () {
   for (var key in tasks) {
@@ -205,6 +217,8 @@ $("#remove-tasks").on("click", function () {
   }
   saveTasks();
 });
+
+var auditTask = function (taskEl) {};
 
 // load tasks for the first time
 loadTasks();
