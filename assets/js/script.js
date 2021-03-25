@@ -11,6 +11,9 @@ var createTask = function (taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  //check due date
+  auditTask(taskLi);
+
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
 };
@@ -30,7 +33,6 @@ var loadTasks = function () {
 
   // loop over object properties
   $.each(tasks, function (list, arr) {
-    console.log(list, arr);
     // then loop over sub-array
     arr.forEach(function (task) {
       createTask(task.text, task.date, list);
@@ -115,6 +117,9 @@ $(".list-group").on("change", "input[type='text']", function () {
 
   //replace input with span element
   $(this).replaceWith(taskSpan);
+
+  //pass task <li> into auditTast to check new due dates
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 //drag-drop sortable
@@ -123,18 +128,10 @@ $(".card .list-group").sortable({
   scroll: false,
   tolerance: "pointer",
   helper: "clone",
-  activate: function (event) {
-    console.log("activate", this);
-  },
-  deactivate: function (event) {
-    console.log("deactivate", this);
-  },
-  over: function (event) {
-    console.log("over", event.target);
-  },
-  out: function (event) {
-    console.log("out", event.target);
-  },
+  activate: function (event) {},
+  deactivate: function (event) {},
+  over: function (event) {},
+  out: function (event) {},
   update: function (event) {
     var tempArr = [];
     $(this)
@@ -218,7 +215,23 @@ $("#remove-tasks").on("click", function () {
   saveTasks();
 });
 
-var auditTask = function (taskEl) {};
+var auditTask = function (taskEl) {
+  var date = $(taskEl).find("span").text().trim();
+  console.log(date);
+
+  //prints out an object for the value of the date at 5pm
+  var time = moment(date, "L").set("hour", 17);
+
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+  if (moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  } else if (Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+
+  console.log(time);
+};
 
 // load tasks for the first time
 loadTasks();
